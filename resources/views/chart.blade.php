@@ -71,10 +71,10 @@
                     @endif
                   </p>
 
-                  <p>Chart Runs:</p>
+                  {{-- <p>Chart Runs:</p>
                   <ul>
                     {{ implode(', ', $item->chart_runs) }}
-                  </ul>
+                  </ul> --}}
                 </div>
                 <div class="chart__actions">
                   <a href="{{ json_decode($item->track_data)->external_urls->spotify }}" target="_blank" class="btn-play">
