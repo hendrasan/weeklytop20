@@ -21,6 +21,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'spotify_id',
+        'spotify_access_token',
+        'spotify_refresh_token'
     ];
 
     /**
@@ -42,4 +45,12 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Get the charts for the user.
+     */
+    public function charts()
+    {
+        return $this->hasMany(Chart::class);
+    }
 }

@@ -13,6 +13,11 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // $schedule->command('inspire')->hourly();
+        $schedule->command('chart:generate')
+            ->weeklyOn(1, '12:00')
+            ->timezone('Asia/Jakarta')
+            ->withoutOverlapping()
+            ->sendOutputTo(storage_path('logs/chart.log'), true);
     }
 
     /**
