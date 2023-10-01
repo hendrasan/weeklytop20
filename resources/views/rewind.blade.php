@@ -10,8 +10,8 @@
           <div class="level">
             <div class="level-left">
               <div>
-                <h2 class="title is-3">Your 2018 Rewind</h2>
-                <h3 class="subtitle is-6 has-text-grey">These are the top 20 songs you enjoy in 2018</h3>
+                <h2 class="title is-3">Your {{ $year }} Rewind</h2>
+                <h3 class="subtitle is-6 has-text-grey">These are the top 50 songs you enjoy in {{ $year }}</h3>
               </div>
             </div>
           </div>
@@ -110,7 +110,7 @@
           preConfirm: function (title) {
             isCreatingPlaylist = true;
 
-            axios.post("{{ route('rewind.create-playlist') }}")
+            axios.post("{{ route('rewind.create-playlist', $year) }}")
             .then(function (response) {
               isCreatingPlaylist = false;
               $('.js-create-playlist').addClass('is-invisible');

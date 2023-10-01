@@ -16,6 +16,22 @@ class Spotify {
         protected SpotifyWebAPI $spotify
     ) {}
 
+    public function getChart($user)
+    {
+        try {
+            $this->spotify->setAccessToken($user->spotify_access_token);
+
+            $top20_tracks = $this->spotify->getMyTop('tracks', [
+                'limit' => 20,
+                'time_range' => 'short_term' // long_term | medium_term | short_term
+            ]);
+
+            return $top20_tracks;
+        } catch (Exception $e) {
+            Log::info($e);
+        }
+    }
+
     public function generateChart($user)
     {
         try {

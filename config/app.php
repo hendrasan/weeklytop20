@@ -159,6 +159,8 @@ return [
         /*
          * Package Service Providers...
          */
+        \SocialiteProviders\Manager\ServiceProvider::class,
+        App\Providers\SpotifyServiceProvider::class,
 
         /*
          * Application Service Providers...

@@ -64,10 +64,10 @@ if (!function_exists('getArrowIcon')) {
      * TODO: change this to TailwindCSS and other icon sets (FontAwesome is huge)
      *
      * @param int $curr
-     * @param int $prev
+     * @param int|null $prev
      * @return string
      */
-    function getArrowIcon(int $curr, int $prev): string
+    function getArrowIcon(int $curr, ?int $prev): string
     {
         return match(true) {
             empty($prev) => 'has-text-warning fa-star',

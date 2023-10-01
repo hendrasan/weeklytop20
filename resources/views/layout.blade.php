@@ -20,8 +20,8 @@
 
   @yield('before_scripts')
 
-  {{-- <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-  <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path() . '/js/site.js') }}"></script> --}}
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path() . '/js/site.js') }}"></script>
 
   @yield('scripts')
 </body>
