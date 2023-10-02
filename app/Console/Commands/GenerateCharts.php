@@ -52,12 +52,12 @@ class GenerateCharts extends Command
             // TODO: change this using queues
             try {
                 $this->spotify->generateChart($user);
+                $this->info('Chart for ' . $user->name . ' generated successfully!');
             } catch (\Exception $e) {
                 $this->error('Error generating chart for ' . $user->name . ': ' . $e->getMessage());
                 Log::error('[Commands\GenerateCharts] Error generating chart for ' . $user->name . ': ' . $e->getMessage());
                 continue;
             }
-            $this->info('Chart for ' . $user->name . ' generated successfully!');
 
             $bar->advance();
         }
