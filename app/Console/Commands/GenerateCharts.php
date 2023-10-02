@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Log;
 use App\Models\User;
 use Illuminate\Console\Command;
 
