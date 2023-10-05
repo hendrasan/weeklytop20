@@ -11,7 +11,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.0/css/bulma.min.css">
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.12/css/all.css" integrity="sha384-G0fIWCsCzJIMAVNQPfjH08cyYaUtMwjJwqiRKxxE/rx96Uroj1BtIQ6MLJuheaO9" crossorigin="anonymous">
 
-  <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path() . '/css/app.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/old.app.css') }}?v={{ filemtime(public_path() . '/css/old.app.css') }}">
+
+  @vite('resources/css/app.css')
 
   @yield('styles')
 </head>
