@@ -73,7 +73,7 @@
 
                   {{-- <p>Chart Runs:</p>
                   <ul>
-                    {{ implode(', ', $item->chart_runs) }}
+                    {{ implode(', ', json_decode($item->chart_runs)) }}
                   </ul> --}}
                 </div>
                 <div class="chart__actions">

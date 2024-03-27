@@ -17,7 +17,8 @@ class HomeController extends Controller
 
     public function index(Spotify $spotify)
     {
-        $users = User::has('charts')->paginate(20);
+        // $users = User::has('charts')->with('latest_chart_top_tracks')->paginate(20);
+        $users = User::with(['latest_chart', 'latest_chart_top_tracks'])->paginate(20);
 
         return view('index', compact('users'));
     }
@@ -38,17 +39,21 @@ class HomeController extends Controller
             return redirect()->route('chart', [$user->spotify_id]);
         }
 
-        $this_week_chart = Chart::where('user_id', $user->id)->where('period', $current_period)->get();
+        $chart = Chart::where('user_id', $user->id)
+            // ->selectRaw('*, (SELECT JSON_ARRAYAGG(position) FROM charts c WHERE `user_id` = 1 and c.track_spotify_id = charts.track_spotify_id) as chart_runs')
+            ->withChartRuns($user->id)
+            ->where('period', $current_period)
+            ->get();
 
-        $chart = $this_week_chart->map(function($c) use($current_period) {
-            $chart_runs = Chart::where('track_spotify_id', $c->track_spotify_id)
-                ->where('period', '<=', $current_period)
-                // ->select('period', 'position', 'created_at')
-                ->pluck('position')
-                ->toArray();
+        // $chart = $this_week_chart->map(function($c) use($current_period) {
+        //     $chart_runs = Chart::where('track_spotify_id', $c->track_spotify_id)
+        //         ->where('period', '<=', $current_period)
+        //         // ->select('period', 'position', 'created_at')
+        //         ->pluck('position')
+        //         ->toArray();
 
-            return $c->setAttribute('chart_runs', $chart_runs);
-        });
+        //     return $c->setAttribute('chart_runs', $chart_runs);
+        // });
 
         return view('chart', compact('user', 'chart', 'latest_period', 'current_period'));
     }
