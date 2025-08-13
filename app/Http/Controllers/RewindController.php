@@ -8,9 +8,11 @@ use App\Services\Spotify;
 
 class RewindController extends Controller
 {
-    public function rewind($year)
+    /**
+     * Get chart data with aggregates for a user and year.
+     */
+    private function getUserChartWithAggregates($user, $year)
     {
-        $user = Auth::user();
         $subquery = Chart::query()
             ->select(
                 'track_spotify_id',
@@ -26,45 +28,7 @@ class RewindController extends Controller
             ->orderByDesc('score')
             ->limit(50);
 
-        $chart = Chart::where('user_id', $user->id)
-            ->whereYear('created_at', $year)
-            ->joinSub($subquery, 'aggs', function ($join) {
-                $join->on('charts.track_spotify_id', '=', 'aggs.track_spotify_id');
-            })
-            ->select('charts.*', 'aggs.peak', 'aggs.weeks_on_no_1', 'aggs.chart_runs', 'aggs.total_periods_on_chart', 'aggs.score')
-            ->whereIn('charts.id', function ($query) use($user, $year) {
-                $query->select(DB::raw('MIN(id)'))
-                    ->from('charts')
-                    ->where('user_id', $user->id)
-                    ->whereYear('created_at', $year)
-                    ->groupBy('track_spotify_id');
-            })
-            ->orderByDesc('aggs.score')
-            ->take(50)
-            ->get();
-
-        return view('rewind', compact('year', 'chart'));
-    }
-
-    public function createRewindPlaylist(Spotify $spotify, $year)
-    {
-        $user = Auth::user();
-        $subquery = Chart::query()
-            ->select(
-                'track_spotify_id',
-                DB::raw('MIN(position) as peak'),
-                DB::raw('SUM(CASE WHEN position = 1 THEN 1 ELSE 0 END) as weeks_on_no_1'),
-                DB::raw('GROUP_CONCAT(position) as chart_runs'),
-                DB::raw('COUNT(periods_on_chart) as total_periods_on_chart'),
-                DB::raw('SUM(21 - position) as score')
-            )
-            ->where('user_id', $user->id)
-            ->whereYear('created_at', $year)
-            ->groupBy('track_spotify_id')
-            ->orderByDesc('score')
-            ->limit(50);
-
-        $chart = Chart::where('user_id', $user->id)
+        return Chart::where('user_id', $user->id)
             ->whereYear('created_at', $year)
             ->joinSub($subquery, 'aggs', function ($join) {
                 $join->on('charts.track_spotify_id', '=', 'aggs.track_spotify_id');
@@ -80,6 +44,20 @@ class RewindController extends Controller
             ->orderByDesc('aggs.score')
             ->take(50)
             ->get();
+    }
+
+    public function rewind($year)
+    {
+        $user = Auth::user();
+        $chart = $this->getUserChartWithAggregates($user, $year);
+
+        return view('rewind', compact('year', 'chart'));
+    }
+
+    public function createRewindPlaylist(Spotify $spotify, $year)
+    {
+        $user = Auth::user();
+        $chart = $this->getUserChartWithAggregates($user, $year);
 
         $tracks = $chart->pluck('track_spotify_id')->toArray();
         $new_playlist = $spotify->createPlaylist($user, [
