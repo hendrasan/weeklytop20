@@ -1,7 +1,4 @@
 <?php
 
-it('returns a successful response', function () {
-    $response = $this->get('/');
-
-    $response->assertStatus(200);
-});
+// This file has been replaced with more comprehensive feature tests.
+// See HomeControllerTest.php, AuthSpotifyControllerTest.php, and RoutesTest.php

@@ -147,7 +147,7 @@ class Spotify {
                 $user->spotify_refresh_token = $session->getRefreshToken();
                 $user->save();
 
-                $this->generateChart($user);
+                return $this->generateChart($user);
             }
 
             Log::info($e);

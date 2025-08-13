@@ -18,7 +18,7 @@ class HomeController extends Controller
     public function index(Spotify $spotify)
     {
         // $users = User::has('charts')->with('latest_chart_top_tracks')->paginate(20);
-        $users = User::with(['latest_chart', 'latest_chart_top_tracks'])->paginate(20);
+        $users = User::has('latest_chart')->with(['latest_chart', 'latest_chart_top_tracks'])->paginate(20);
 
         return view('index', compact('users'));
     }
@@ -77,10 +77,10 @@ class HomeController extends Controller
             ->select(
                 'track_spotify_id',
                 DB::raw('MIN(position) as peak'),
-                DB::raw('SUM(CASE WHEN position = 1 THEN 1 ELSE 0 END) as weeks_on_no_1'),
+                DB::raw('CAST(SUM(CASE WHEN position = 1 THEN 1 ELSE 0 END) as UNSIGNED) as weeks_on_no_1'),
                 DB::raw('GROUP_CONCAT(position) as chart_runs'),
                 DB::raw('COUNT(periods_on_chart) as total_periods_on_chart'),
-                DB::raw('SUM(21 - position) as score')
+                DB::raw('CAST(SUM(21 - position) as UNSIGNED) as score')
             )
             ->where('user_id', $user->id)
             ->whereYear('created_at', $year)

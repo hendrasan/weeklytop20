@@ -15,10 +15,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
-
 Route::controller(AuthSpotifyController::class)->group(function () {
     Route::get('/login/spotify', 'spotifyLogin')->name('login.spotify');
     Route::get('/auth/spotify', 'spotifyCallback');

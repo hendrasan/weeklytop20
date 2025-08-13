@@ -11,7 +11,7 @@
             <div class="level-left">
               <div>
                 <h2 class="title is-3">{{ $user->name }}'s Top 20</h2>
-                <h3 class="subtitle is-6 has-text-grey">(Last update at {{ $chart[0]->created_at->format('d M Y H:i:s') }})</h3>
+                <h3 class="subtitle is-6 has-text-grey">(Last update at {{ $chart->isNotEmpty() ? $chart[0]->created_at->format('d M Y H:i:s') : 'N/A' }})</h3>
               </div>
             </div>
           </div>
