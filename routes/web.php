@@ -1,19 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthSpotifyController;
+use App\Http\Controllers\ChartController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RewindController;
 use Illuminate\Support\Facades\Route;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
 
 Route::controller(AuthSpotifyController::class)->group(function () {
     Route::get('/login/spotify', 'spotifyLogin')->name('login.spotify');
@@ -24,13 +16,18 @@ Route::controller(AuthSpotifyController::class)->group(function () {
 
 Route::controller(HomeController::class)->group(function () {
     Route::get('/', 'index')->name('home');
+});
 
+Route::controller(ChartController::class)->group(function () {
     Route::get('chart/{user}/{chartId?}', 'chart')->name('chart');
+});
 
-    Route::middleware(['auth'])->group(function () {
-        Route::get('dashboard', 'dashboard')->name('dashboard')->middleware('auth');
-
-        Route::get('rewind/{year}', 'rewind')->name('rewind')->middleware('auth');
-        Route::post('rewind/{year}', 'createRewindPlaylist')->name('rewind.create-playlist')->middleware('auth');
+Route::middleware(['auth'])->group(function () {
+    Route::controller(DashboardController::class)->group(function () {
+        Route::get('dashboard', 'dashboard')->name('dashboard');
+    });
+    Route::controller(RewindController::class)->group(function () {
+        Route::get('rewind/{year}', 'rewind')->name('rewind');
+        Route::post('rewind/{year}', 'createRewindPlaylist')->name('rewind.create-playlist');
     });
 });
