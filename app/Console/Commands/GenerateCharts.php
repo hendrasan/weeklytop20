@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\GenerateChart;
 use Log;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -38,33 +39,24 @@ class GenerateCharts extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
-        $this->info('Starting chart generation...');
+        $this->info('Dispatching chart generation jobs...');
 
-        // TODO: change this to only get users who want to have updated charts,
-        //       maybe by adding a flag column to the users table
-        $users = User::all();
+        $total = User::count();
+        $bar = $this->output->createProgressBar($total);
 
-        $bar = $this->output->createProgressBar(count($users));
+        $bar->start();
 
-        foreach ($users as $user) {
-            // TODO: change this using queues
-            try {
-                $this->spotify->generateChart($user);
-                $this->info('Chart for ' . $user->name . ' generated successfully!');
-            } catch (\Exception $e) {
-                $this->error('Error generating chart for ' . $user->name . ': ' . $e->getMessage());
-                Log::error('[Commands\GenerateCharts] Error generating chart for ' . $user->name . ': ' . $e->getMessage());
-                continue;
-            }
-
+        User::cursor()->each(function (User $user) use ($bar) {
+            // Dispatch the job for each user
+            GenerateChart::dispatch($user->id);
             $bar->advance();
-        }
+        });
 
         $bar->finish();
 
-        $this->info(PHP_EOL . 'All charts generated successfully!');
-        Log::info('[Commands\GenerateCharts] All charts generated successfully!');
+        $this->info(PHP_EOL . 'All charts generation jobs dispatched successfully!');
+        Log::info('[Commands\GenerateCharts] All charts generation jobs dispatched successfully!');
     }
 }
