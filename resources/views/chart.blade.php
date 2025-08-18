@@ -77,8 +77,9 @@
                   @endphp
 
                   @if (!empty($runsWithGaps))
-                    <div class="chart__runs" aria-label="Chart history">
-                      <div class="flex flex-wrap items-end gap-4 mt-3">
+                    <div class="chart__runs mt-4 flex flex-col gap-4" aria-label="Chart history">
+                      <h3 class="text-sm font-semibold text-gray-700">Chart history</h3>
+                      <div class="flex flex-wrap items-end gap-4">
                         @foreach ($runsWithGaps as $run)
                           <div class="flex flex-col items-center text-center">
                             <div class="h-3 mb-1">
@@ -109,7 +110,11 @@
                                   {{ $run['is_current'] ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700' }}
                                   {{ $run['is_peak'] ? 'ring-2 ring-rose-400' : '' }}
                                 @endif">
-                              {{ $run['display'] }}
+                              @if (isset($run['is_gap']))
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                              @else
+                                {{ $run['display'] }}
+                              @endif
                             </div>
                           </div>
                           @if (isset($run['is_gap']))
@@ -119,14 +124,14 @@
                         @endforeach
                       </div>
 
-                      <div class="flex items-center gap-4 mt-3">
+                      <div class="flex items-center gap-4">
                         <div class="flex items-center gap-2">
                           <div class="w-4 h-4 rounded-full bg-green-500"></div>
                           <span class="text-sm text-gray-600">This week</span>
                         </div>
 
                         <div class="flex items-center gap-2">
-                          <div class="w-4 h-4 rounded-full bg-rose-400"></div>
+                          <div class="w-4 h-4 rounded-full ring-2 ring-rose-400"></div>
                           <span class="text-sm text-gray-600">Peak position</span>
                         </div>
                       </div>

@@ -102,52 +102,19 @@ if (!function_exists('annotateRuns')) {
         }
 
         $peak = !empty($positions) ? min($positions) : null;
-        $annotated = [];
+        $result = [];
 
         foreach ($runs as $i => $run) {
             $position = $run['position'] ?? null;
             $period = $run['period'] ?? null;
 
-            $isCurrent = ($period === $currentPeriod);
-            $display = (is_null($position) || $position == 0) ? '—' : (string) $position;
-
-            // Calculate trend compared to previous entry
-            $prev = $i > 0 ? ($runs[$i - 1]['position'] ?? null) : null;
-            $trend = null;
-            if (!is_null($prev) && !is_null($position) && $prev != 0 && $position != 0) {
-                if ($position < $prev) {
-                    $trend = 'up';
-                } elseif ($position > $prev) {
-                    $trend = 'down';
-                } else {
-                    $trend = 'flat';
-                }
-            }
-
-            $isPeak = (!is_null($peak) && !is_null($position) && $position != 0 && $position === $peak);
-
-            $annotated[] = [
-                'value' => $position,
-                'period' => $period,
-                'display' => $display,
-                'trend' => $trend,
-                'is_current' => $isCurrent,
-                'is_peak' => $isPeak,
-            ];
-        }
-
-        // Add gap indicators for non-consecutive periods
-        $runsWithGaps = [];
-        foreach ($annotated as $i => $run) {
-            // Check if there's a gap from previous period
+            // Check for gaps and add gap indicator if needed
             if ($i > 0) {
-                $prevPeriod = $annotated[$i - 1]['period'];
-                $currentRunPeriod = $run['period'];
+                $prevPeriod = $runs[$i - 1]['period'] ?? null;
 
-                // If gap > 1, add ellipsis
-                if ($currentRunPeriod - $prevPeriod > 1) {
-                    $runsWithGaps[] = [
-                        'display' => 'n/a',
+                if (!is_null($prevPeriod) && !is_null($period) && $period - $prevPeriod > 1) {
+                    $result[] = [
+                        'display' => '...',
                         'is_gap' => true,
                         'trend' => null,
                         'is_current' => false,
@@ -158,9 +125,43 @@ if (!function_exists('annotateRuns')) {
                 }
             }
 
-            $runsWithGaps[] = $run;
+            $isCurrent = ($period === $currentPeriod);
+            $display = (is_null($position) || $position == 0) ? '—' : (string) $position;
+
+            // Calculate trend - only if no gap before this item
+            $trend = null;
+            if ($i > 0) {
+                $prevPeriod = $runs[$i - 1]['period'] ?? null;
+                $prev = $runs[$i - 1]['position'] ?? null;
+
+                // Only calculate trend if periods are consecutive
+                if (!is_null($prevPeriod) && !is_null($period) &&
+                    $period - $prevPeriod === 1 &&
+                    !is_null($prev) && !is_null($position) &&
+                    $prev != 0 && $position != 0) {
+
+                    if ($position < $prev) {
+                        $trend = 'up';
+                    } elseif ($position > $prev) {
+                        $trend = 'down';
+                    } else {
+                        $trend = 'flat';
+                    }
+                }
+            }
+
+            $isPeak = (!is_null($peak) && !is_null($position) && $position != 0 && $position === $peak);
+
+            $result[] = [
+                'value' => $position,
+                'period' => $period,
+                'display' => $display,
+                'trend' => $trend,
+                'is_current' => $isCurrent,
+                'is_peak' => $isPeak,
+            ];
         }
 
-        return $runsWithGaps;
+        return $result;
     }
 }

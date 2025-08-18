@@ -78,3 +78,24 @@ it('adds gap indicators for non-consecutive periods', function () {
     expect($annotated[2]['display'])->toBe('5');
     expect($annotated[2])->not->toHaveKey('is_gap');
 });
+
+it('sets null trend after gaps', function () {
+    $runs = [
+        ['period' => 131, 'position' => 10],
+        ['period' => 133, 'position' => 5], // Gap at period 132
+        ['period' => 134, 'position' => 3],
+    ];
+    $currentPeriod = 134;
+
+    $annotated = annotateRuns($runs, $currentPeriod);
+
+    expect(count($annotated))->toBe(4); // 10, ..., 5, 3
+
+    // Position after gap should have null trend
+    expect($annotated[2]['display'])->toBe('5');
+    expect($annotated[2]['trend'])->toBeNull(); // Should be null due to gap
+
+    // Next position should have valid trend since consecutive
+    expect($annotated[3]['display'])->toBe('3');
+    expect($annotated[3]['trend'])->toBe('up'); // 5 -> 3 is up
+});

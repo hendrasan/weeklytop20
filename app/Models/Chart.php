@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class Chart extends Model
@@ -17,22 +18,28 @@ class Chart extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function scopeWithChartRuns($query,$user_id)
+    public function scopeWithChartRuns(Builder $query, int $userId): Builder
     {
-        return $query->addSelect(['chart_runs' =>
-            DB::table('charts', 'c')
+        $table = $query->getModel()->getTable(); // usually 'charts'
+
+        $sub = DB::query()
+            ->fromSub(function ($q) use ($userId, $table) {
+                $q->from('charts as c')
+                    ->select(['c.period', 'c.position', 'c.created_at'])
+                    ->where('c.user_id', $userId)
+                    ->whereColumn('c.track_spotify_id', $table . '.track_spotify_id')
+                    ->orderBy('c.period');
+            }, 'c2')
             ->selectRaw("
-                CONCAT(
-                    '[',
-                    GROUP_CONCAT(
-                    JSON_OBJECT('period', period, 'position', position)
-                    ORDER BY period SEPARATOR ','
-                    ),
-                    ']'
+            JSON_ARRAYAGG(
+                JSON_OBJECT(
+                    'period', c2.period,
+                    'chart_date',   DATE(c2.created_at),
+                    'position', c2.position
                 )
-            ")
-            ->whereColumn('track_spotify_id', 'charts.track_spotify_id')
-            ->where('user_id', $user_id)
-        ]);
+            )
+        ");
+
+        return $query->addSelect(['chart_runs' => $sub]);
     }
 }
