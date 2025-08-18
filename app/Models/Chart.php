@@ -21,7 +21,16 @@ class Chart extends Model
     {
         return $query->addSelect(['chart_runs' =>
             DB::table('charts', 'c')
-            ->selectRaw('JSON_ARRAYAGG(position)')
+            ->selectRaw("
+                CONCAT(
+                    '[',
+                    GROUP_CONCAT(
+                    JSON_OBJECT('period', period, 'position', position)
+                    ORDER BY period SEPARATOR ','
+                    ),
+                    ']'
+                )
+            ")
             ->whereColumn('track_spotify_id', 'charts.track_spotify_id')
             ->where('user_id', $user_id)
         ]);
