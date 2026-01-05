@@ -19,8 +19,9 @@ class AuthSpotifyController extends Controller
      */
     public function spotifyLogin()
     {
-        $code_verifier = Str::random(64);
+        $code_verifier = Str::random(96);
         session(['spotify_code_verifier' => $code_verifier]);
+        session()->save();
 
         $code_challenge = strtr(rtrim(base64_encode(hash('sha256', $code_verifier, true)), '='), '+/', '-_');
 
@@ -40,6 +41,10 @@ class AuthSpotifyController extends Controller
     public function spotifyCallback(Request $request, Spotify $spotify)
     {
         $code_verifier = $request->session()->pull('spotify_code_verifier');
+
+        if (empty($code_verifier)) {
+            \Log::error('Spotify PKCE error: code_verifier is missing from session.');
+        }
 
         $user = Socialite::driver('spotify')
             ->with(['code_verifier' => $code_verifier])
