@@ -4,7 +4,6 @@ use App\Models\Chart;
 use App\Models\User;
 use App\Services\Spotify;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Mockery;
 
 uses(RefreshDatabase::class);
 
@@ -224,7 +223,8 @@ describe('Chart Generation Integration', function () {
 
         // Parse chart runs and verify progression
         $chartRuns = json_decode($trackChart->chart_runs, true);
-        expect($chartRuns)->toContain(5, 3, 1);
+        expect(collect($chartRuns)->pluck('period')->toArray())->toEqual([1, 2, 3]);
+        expect(collect($chartRuns)->pluck('position')->toArray())->toEqual([5, 3, 1]);
     });
 
     test('rewind functionality calculates year-end charts correctly', function () {
