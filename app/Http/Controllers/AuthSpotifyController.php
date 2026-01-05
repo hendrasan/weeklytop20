@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 use Socialite;
 
@@ -18,18 +19,36 @@ class AuthSpotifyController extends Controller
      */
     public function spotifyLogin()
     {
+        $code_verifier = Str::random(96);
+        session(['spotify_code_verifier' => $code_verifier]);
+        session()->save();
+
+        $code_challenge = strtr(rtrim(base64_encode(hash('sha256', $code_verifier, true)), '='), '+/', '-_');
+
         return Socialite::driver('spotify')
             ->scopes([
                 'user-top-read',
                 'playlist-modify-public',
                 'playlist-modify-private'
             ])
+            ->with([
+                'code_challenge' => $code_challenge,
+                'code_challenge_method' => 'S256',
+            ])
             ->redirect();
     }
 
-    public function spotifyCallback(Spotify $spotify)
+    public function spotifyCallback(Request $request, Spotify $spotify)
     {
-        $user = Socialite::driver('spotify')->user();
+        $code_verifier = $request->session()->pull('spotify_code_verifier');
+
+        if (empty($code_verifier)) {
+            \Log::error('Spotify PKCE error: code_verifier is missing from session.');
+        }
+
+        $user = Socialite::driver('spotify')
+            ->with(['code_verifier' => $code_verifier])
+            ->user();
 
         $auth_user = $this->findOrCreateUser($user);
 
@@ -54,7 +73,7 @@ class AuthSpotifyController extends Controller
             $new_user = User::create([
                 'name' => $user->name,
                 'email' => !empty($user->email) ? $user->email : $user->name . '@spotify.com',
-                'avatar' => !empty($user->avatar) ? $user->avatar : '',
+                // 'avatar' => !empty($user->avatar) ? $user->avatar : '',
                 'spotify_id' => $user->id,
                 'spotify_access_token' => $user->token,
                 'spotify_refresh_token' => $user->refreshToken,
@@ -63,7 +82,7 @@ class AuthSpotifyController extends Controller
             return $new_user;
         } else {
             // otherwise, update the access token and refresh token
-            $auth_user->avatar = !empty($user->avatar) ? $user->avatar : '';
+            // $auth_user->avatar = !empty($user->avatar) ? $user->avatar : '';
             $auth_user->spotify_access_token = $user->token;
             $auth_user->spotify_refresh_token = $user->refreshToken;
 
