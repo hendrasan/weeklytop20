@@ -50,7 +50,8 @@ class GenerateCharts extends Command
 
         User::cursor()->each(function (User $user) use ($bar) {
             // Dispatch the job for each user
-            GenerateChart::dispatch($user->id);
+            // GenerateChart::dispatch($user->id);
+            $this->spotify->generateChart($user);
             $bar->advance();
         });
 
